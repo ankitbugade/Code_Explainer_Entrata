@@ -40,7 +40,12 @@ function App() {
       await axios.post(endpoint, { username, password });
       setIsAuth(true);
     } catch (e: any) {
-      alert(e.response?.data?.error || 'Authentication error');
+      console.error('Auth API Error:', e);
+      let errorMsg = e.message || 'Authentication error';
+      if (e.response?.data) {
+         errorMsg = typeof e.response.data === 'object' ? JSON.stringify(e.response.data) : e.response.data;
+      }
+      alert(`Error: ${errorMsg}`);
     }
   };
 
