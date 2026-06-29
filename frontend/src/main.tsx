@@ -5,7 +5,7 @@ import App from './App';
 import './index.css';
 import axios from 'axios';
 axios.defaults.withCredentials = true;
-
+axios.defaults.baseURL = 'https://code-explainer-entrata.onrender.com';
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <App />

@@ -9,7 +9,7 @@ export default defineConfig({
     proxy: {
       // Proxy API requests to the backend during development
       '/api': {
-        target: process.env.VITE_BACKEND_URL || 'http://localhost:4001',
+        target: 'https://code-explainer-entrata.onrender.com',
         changeOrigin: true,
         secure: false,
       },
