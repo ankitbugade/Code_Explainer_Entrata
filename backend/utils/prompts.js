@@ -41,7 +41,7 @@ Evaluate the explanation for:
 Please respond with a valid JSON object (and ONLY the JSON, no other text) with the following structure:
 {
   "score": <number between 0 and 100>,
-  "correctedExplanation": "If score < 90, provide a corrected/improved version of the explanation. Otherwise, this can be an empty string."
+  "correctedExplanation": "If score < 90, provide a corrected/improved version of the explanation. Otherwise, this can be an empty string.The explanation of the code as bullet points. Each point should start with a hyphen (-) and be concise."
 }
 
 Make sure the JSON is valid and parseable.`;
