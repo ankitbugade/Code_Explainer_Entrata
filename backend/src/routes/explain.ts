@@ -12,7 +12,7 @@ import { authMiddleware } from '../middleware/auth';
 export const explainRouter = Router();
 
 // Protect all explain routes
-explainRouter.use(authMiddleware);
+// auth middleware removed – explain endpoint is now public
 
 const requestSchema = z.object({
   language: z.enum(['python', 'javascript']),
