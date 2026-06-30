@@ -1,7 +1,6 @@
-// backend/migrations/2024_add_users_table.ts
-import { Knex } from 'knex';
+// backend/migrations/2024_add_users_table.js
 
-export async function up(knex: Knex): Promise<void> {
+exports.up = async function up(knex) {
   const exists = await knex.schema.hasTable('users');
   if (!exists) {
     await knex.schema.createTable('users', (table) => {
@@ -11,11 +10,11 @@ export async function up(knex: Knex): Promise<void> {
       table.timestamps(true, true);
     });
   }
-}
+};
 
-export async function down(knex: Knex): Promise<void> {
+exports.down = async function down(knex) {
   const exists = await knex.schema.hasTable('users');
   if (exists) {
     await knex.schema.dropTable('users');
   }
-}
+};

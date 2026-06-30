@@ -1,15 +1,14 @@
-// src/routes/explain.ts
-import { Router } from 'express';
-import { z } from 'zod';
-import * as acorn from 'acorn';
-import { randomUUID } from 'crypto';
-import { spawnSync } from 'child_process';
-import { createGroqClient } from '../../utils/groqClient';
-import { EXPLAINER_PROMPT, JUDGE_PROMPT } from '../../utils/prompts';
-import { db } from '../db';
-import { authMiddleware } from '../middleware/auth';
+// src/routes/explain.js
+const { Router } = require('express');
+const { z } = require('zod');
+const acorn = require('acorn');
+const { randomUUID } = require('crypto');
+const { spawnSync } = require('child_process');
+const { createGroqClient } = require('../../utils/groqClient');
+const { EXPLAINER_PROMPT, JUDGE_PROMPT } = require('../../utils/prompts');
+const { db } = require('../db');
 
-export const explainRouter = Router();
+const explainRouter = Router();
 
 // Protect all explain routes
 // auth middleware removed – explain endpoint is now public
@@ -21,7 +20,7 @@ const requestSchema = z.object({
   id: z.string().uuid().optional(),
 });
 
-function parseLLMResponse(content: string) {
+function parseLLMResponse(content) {
   let cleaned = content.trim();
   if (cleaned.startsWith('```json')) {
     cleaned = cleaned.replace(/^```json\s*/, '');
@@ -38,13 +37,16 @@ explainRouter.post('/', async (req, res) => {
   try {
     const parsed = requestSchema.parse(req.body);
     const { language, code, id } = parsed;
+    // NOTE: original TS code referenced an undefined `snippetId` here.
+    // Fixed: use the provided id (for upserts) or generate a new one.
+    const snippetId = id || randomUUID();
     let metadata = '';
 
     if (language === 'javascript') {
       try {
         const ast = acorn.parse(code, { ecmaVersion: 'latest' });
-        const functions: string[] = [];
-        function walk(node: any) {
+        const functions = [];
+        function walk(node) {
           if (!node) return;
           if (node.type === 'FunctionDeclaration' && node.id?.name) functions.push(node.id.name);
           for (const key of Object.keys(node)) {
@@ -55,7 +57,7 @@ explainRouter.post('/', async (req, res) => {
         }
         walk(ast);
         if (functions.length) metadata = `Detected Functions: ${functions.join(', ')}`;
-      } catch (err: any) {
+      } catch (err) {
         return res.status(400).json({ error: `JavaScript Syntax Error: ${err.message}` });
       }
     } else if (language === 'python') {
@@ -67,7 +69,7 @@ explainRouter.post('/', async (req, res) => {
         if (result.status !== 0) {
           return res.status(400).json({ error: `Python Syntax Error:\n${result.stderr || 'Invalid syntax'}` });
         }
-      } catch (err: any) {
+      } catch (err) {
         if (err.code === 'ENOENT') {
           console.warn('Python is not installed or not in PATH, skipping python validation');
         } else {
@@ -83,7 +85,7 @@ explainRouter.post('/', async (req, res) => {
       messages: [{ role: 'user', content: explainerPrompt }],
       temperature: 0.1,
     });
-    
+
     // Parse LLM response carefully to strip out markdown backticks
     const explainerContent = explainerResponse.choices[0].message.content || '{}';
     const explainerJson = parseLLMResponse(explainerContent);
@@ -94,7 +96,7 @@ explainRouter.post('/', async (req, res) => {
       messages: [{ role: 'user', content: judgePrompt }],
       temperature: 0.1,
     });
-    
+
     const judgeContent = judgeResponse.choices[0].message.content || '{}';
     const judgeJson = parseLLMResponse(judgeContent);
 
@@ -124,8 +126,10 @@ explainRouter.post('/', async (req, res) => {
       .merge();
 
     res.json({ id: snippetId, ...finalResult });
-  } catch (err: any) {
+  } catch (err) {
     const message = err instanceof z.ZodError ? err.errors.map((e) => e.message).join(', ') : err.message;
     res.status(400).json({ error: message });
   }
 });
+
+module.exports = { explainRouter };

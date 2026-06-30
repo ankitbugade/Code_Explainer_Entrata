@@ -1,25 +1,55 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Editor from '@monaco-editor/react';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { useSnippetStore } from './store/snippetStore';
+import { ToastHost, toast } from './Toast';
 import './App.css';
 
 function App() {
   // Auth state
   const [isAuth, setIsAuth] = useState(false);
-  const [authMode, setAuthMode] = useState<'login' | 'register'>('register');
+  const [authMode, setAuthMode] = useState('register');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
   // Explain UI state
   const [code, setCode] = useState('');
-  const [language, setLanguage] = useState<'javascript' | 'python'>('javascript');
+  const [language, setLanguage] = useState('javascript');
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<any>(null);
+  const [result, setResult] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedSnippetId, setSelectedSnippetId] = useState<string | null>(null);
+  const [selectedSnippetId, setSelectedSnippetId] = useState(null);
 
   const { snippets, addSnippet, removeSnippet, loadSnippets } = useSnippetStore();
+
+  // Resizable results panel
+  const [panelWidth, setPanelWidth] = useState(380);
+  const draggingRef = React.useRef(false);
+
+  const startResize = () => {
+    draggingRef.current = true;
+    document.body.style.cursor = 'col-resize';
+  };
+
+  useEffect(() => {
+    const onMove = (e) => {
+      if (!draggingRef.current) return;
+      const newWidth = window.innerWidth - e.clientX;
+      setPanelWidth(Math.min(640, Math.max(280, newWidth)));
+    };
+    const onUp = () => {
+      draggingRef.current = false;
+      document.body.style.cursor = '';
+    };
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
+    return () => {
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('mouseup', onUp);
+    };
+  }, []);
 
   // Check authentication on mount
   useEffect(() => {
@@ -39,26 +69,28 @@ function App() {
     try {
       await axios.post(endpoint, { username, password });
       setIsAuth(true);
-    } catch (e: any) {
+      toast(authMode === 'login' ? 'Welcome back!' : 'Account created', 'success');
+    } catch (e) {
       console.error('Auth API Error:', e);
       let errorMsg = e.message || 'Authentication error';
       if (e.response?.data) {
-         errorMsg = typeof e.response.data === 'object' ? JSON.stringify(e.response.data) : e.response.data;
+        errorMsg = typeof e.response.data === 'object' ? JSON.stringify(e.response.data) : e.response.data;
       }
-      alert(`Error: ${errorMsg}`);
+      toast(errorMsg, 'error');
     }
   };
 
   const handleExplain = async () => {
-    if (!code.trim()) return alert('Enter some code');
+    if (!code.trim()) return toast('Enter some code first', 'error');
     setLoading(true);
     try {
       const response = await axios.post('/api/explain', { code, language });
       const snippetData = { ...response.data, code, language };
       setResult(snippetData);
       addSnippet(snippetData);
-    } catch (e: any) {
-      alert(`Error: ${e.response?.data?.error || e.message}`);
+      toast('Analysis complete', 'success');
+    } catch (e) {
+      toast(e.response?.data?.error || e.message, 'error');
     } finally {
       setLoading(false);
     }
@@ -76,12 +108,12 @@ function App() {
       s.language.includes(searchTerm.toLowerCase())
   );
 
-  const copyToClipboard = (text: string) => {
+  const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text);
-    alert('Copied to clipboard!');
+    toast('Copied to clipboard', 'success');
   };
 
-  const formatTimestamp = (timestamp: string) => {
+  const formatTimestamp = (timestamp) => {
     const date = new Date(timestamp);
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
@@ -97,31 +129,39 @@ function App() {
   if (!isAuth) {
     return (
       <div className="auth-container">
-        <h2>{authMode === 'login' ? 'Login' : 'Register'}</h2>
-        <input
-          placeholder="Username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-        <button onClick={handleAuth}>{authMode === 'login' ? 'Login' : 'Register'}</button>
-        <p>
-          {authMode === 'login' ? "Don't have an account?" : 'Already have an account?'}{' '}
-          <span className="link" onClick={() => setAuthMode(authMode === 'login' ? 'register' : 'login')}>
-            {authMode === 'login' ? 'Register' : 'Login'}
-          </span>
-        </p>
+        <ToastHost />
+        <div className="auth-card">
+          <div className="auth-logo">⚡</div>
+          <h2>{authMode === 'login' ? 'Welcome back' : 'Create your account'}</h2>
+          <p className="auth-subtitle">
+            {authMode === 'login' ? 'Log in to continue to Code Explainer' : 'Start explaining code with AI'}
+          </p>
+          <input
+            placeholder="Username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+          <button onClick={handleAuth}>{authMode === 'login' ? 'Login' : 'Register'}</button>
+          <p>
+            {authMode === 'login' ? "Don't have an account?" : 'Already have an account?'}{' '}
+            <span className="link" onClick={() => setAuthMode(authMode === 'login' ? 'register' : 'login')}>
+              {authMode === 'login' ? 'Register' : 'Login'}
+            </span>
+          </p>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="app">
+      <ToastHost />
       <header className="header">
         <h1>AI Code Explainer</h1>
       </header>
@@ -158,12 +198,15 @@ function App() {
                     setSelectedSnippetId(snippet.id);
                     setCode(snippet.code);
                     setLanguage(snippet.language);
-                    setResult(snippet as any);
+                    setResult(snippet);
                   }}
                 >
                   <div className="snippet-badge">{snippet.language === 'javascript' ? 'js' : snippet.language === 'python' ? 'py' : snippet.language}</div>
                   <div className="snippet-info">
-                      <div className="snippet-title">{snippet.title ?? snippet.summary?.substring(0, 30)}{snippet.title ? '' : '...'}</div>
+                    <div className="snippet-title">{snippet.title ?? snippet.summary?.substring(0, 30)}{snippet.title ? '' : '...'}</div>
+                    {snippet.created_at && (
+                      <div className="snippet-time">{formatTimestamp(snippet.created_at)}</div>
+                    )}
                   </div>
                   <button
                     className="delete-btn"
@@ -187,7 +230,7 @@ function App() {
               <label>Language:</label>
               <select
                 value={language}
-                onChange={(e) => setLanguage(e.target.value as any)}
+                onChange={(e) => setLanguage(e.target.value)}
               >
                 <option value="javascript">JavaScript</option>
                 <option value="python">Python</option>
@@ -231,13 +274,25 @@ function App() {
         </div>
 
         {/* Right Panel */}
-        {result && (
-          <div className="explanation-panel">
-            <div className="explanation-header">
-              <h3>Analysis Result</h3>
-              
-            </div>
+        <div className="resize-handle" onMouseDown={startResize} />
+        <div className="explanation-panel" style={{ width: panelWidth }}>
+          <div className="explanation-header">
+            <h3>Analysis Result</h3>
+          </div>
 
+          {loading ? (
+            <div className="explanation-content">
+              <div className="skeleton-block" />
+              <div className="skeleton-block" />
+              <div className="skeleton-block short" />
+            </div>
+          ) : !result ? (
+            <div className="empty-state">
+              <div className="empty-state-icon">🔍</div>
+              <p>Your analysis will appear here</p>
+              <span>Write some code and click Explain</span>
+            </div>
+          ) : (
             <div className="explanation-content">
               {/* Summary */}
               <div className="explanation-section">
@@ -280,13 +335,17 @@ function App() {
                     📋
                   </button>
                 </div>
-                <pre className="code-block">
-                  <code>{result.optimized_code || result.optimizedCode}</code>
-                </pre>
+                <SyntaxHighlighter
+                  language={language === 'python' ? 'python' : 'javascript'}
+                  style={vscDarkPlus}
+                  customStyle={{ borderRadius: 8, fontSize: 12, margin: 0 }}
+                >
+                  {result.optimized_code || result.optimizedCode || ''}
+                </SyntaxHighlighter>
               </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );

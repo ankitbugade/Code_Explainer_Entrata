@@ -1,33 +1,9 @@
-// src/store/snippetStore.ts
+// src/store/snippetStore.js
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import axios from 'axios';
 
-export interface Snippet {
-  id: string;
-  language: 'python' | 'javascript';
-  code: string;
-  title?: string;
-  summary?: string;
-  explanation?: string;
-  optimizedCode?: string;
-  timeComplexity?: string;
-  spaceComplexity?: string;
-  confidence?: number;
-  createdAt: string;
-}
-
-type Store = {
-  snippets: Snippet[];
-  selectedId: string | null;
-  loadSnippets: () => Promise<void>;
-  addSnippet: (s: Snippet) => void;
-  updateSnippet: (id: string, updates: Partial<Snippet>) => void;
-  removeSnippet: (id: string) => void;
-  selectSnippet: (id: string) => void;
-};
-
-export const useSnippetStore = create<Store>()(
+export const useSnippetStore = create()(
   devtools((set, get) => ({
     snippets: [],
     selectedId: null,

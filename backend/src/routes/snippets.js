@@ -1,9 +1,9 @@
-// src/routes/snippets.ts
-import { Router } from 'express';
-import { db } from '../db';
-import { authMiddleware } from '../middleware/auth';
+// src/routes/snippets.js
+const { Router } = require('express');
+const { db } = require('../db');
+const { authMiddleware } = require('../middleware/auth');
 
-export const snippetsRouter = Router();
+const snippetsRouter = Router();
 
 // Protect all snippet routes
 snippetsRouter.use(authMiddleware);
@@ -13,7 +13,7 @@ snippetsRouter.get('/', async (req, res) => {
   try {
     const snippets = await db('snippets').select('*');
     res.json(snippets);
-  } catch (err: any) {
+  } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
@@ -26,7 +26,7 @@ snippetsRouter.get('/:id', async (req, res) => {
       return res.status(404).json({ error: 'Snippet not found' });
     }
     res.json(snippet);
-  } catch (err: any) {
+  } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
@@ -39,7 +39,9 @@ snippetsRouter.delete('/:id', async (req, res) => {
       return res.status(404).json({ error: 'Snippet not found' });
     }
     res.json({ message: 'Snippet deleted' });
-  } catch (err: any) {
+  } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
+
+module.exports = { snippetsRouter };

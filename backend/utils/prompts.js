@@ -1,6 +1,6 @@
-// backend/utils/prompts.ts
+// backend/utils/prompts.js
 
-export function EXPLAINER_PROMPT(code: string, language: string): string {
+function EXPLAINER_PROMPT(code, language) {
   return `You are an expert code explainer. Analyze the following ${language} code and provide a detailed explanation.
 
 Code:
@@ -21,7 +21,7 @@ Please respond with a valid JSON object (and ONLY the JSON, no other text) with 
 Make sure the JSON is valid and parseable.`;
 }
 
-export function JUDGE_PROMPT(code: string, explanation: string): string {
+function JUDGE_PROMPT(code, explanation) {
   return `You are a code quality expert. Judge the quality and accuracy of the following code explanation.
 
 Code:
@@ -46,3 +46,5 @@ Please respond with a valid JSON object (and ONLY the JSON, no other text) with 
 
 Make sure the JSON is valid and parseable.`;
 }
+
+module.exports = { EXPLAINER_PROMPT, JUDGE_PROMPT };

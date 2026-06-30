@@ -1,6 +1,4 @@
-import knex from "knex";
-import * as dotenv from 'dotenv';
-
+const dotenv = require('dotenv');
 dotenv.config();
 
 const config = {
@@ -11,4 +9,5 @@ const config = {
     tableName: 'knex_migrations',
   },
 };
-export default config;
+
+module.exports = config;

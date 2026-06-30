@@ -1,9 +1,11 @@
-// backend/src/routes/health.ts
-import { Router } from 'express';
+// backend/src/routes/health.js
+const { Router } = require('express');
 
-export const healthRouter = Router();
+const healthRouter = Router();
 
 // Simple health‑check endpoint – no auth
 healthRouter.get('/', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
+
+module.exports = { healthRouter };

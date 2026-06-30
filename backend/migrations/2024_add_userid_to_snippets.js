@@ -1,7 +1,6 @@
-// backend/migrations/2024_add_userid_to_snippets.ts
-import { Knex } from 'knex';
+// backend/migrations/2024_add_userid_to_snippets.js
 
-export async function up(knex: Knex): Promise<void> {
+exports.up = async function up(knex) {
   // Ensure users table exists before adding foreign key
   const hasUsers = await knex.schema.hasTable('users');
   if (!hasUsers) {
@@ -18,9 +17,9 @@ export async function up(knex: Knex): Promise<void> {
     table.uuid('user_id');
     table.foreign('user_id').references('users.id').onDelete('CASCADE');
   });
-}
+};
 
-export async function down(knex: Knex): Promise<void> {
+exports.down = async function down(knex) {
   // Remove foreign key and column
   await knex.schema.alterTable('snippets', (table) => {
     table.dropForeign(['user_id']);
@@ -28,4 +27,4 @@ export async function down(knex: Knex): Promise<void> {
   });
   // Optionally drop users table if desired (commented out to avoid data loss)
   // await knex.schema.dropTableIfExists('users');
-}
+};

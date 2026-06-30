@@ -1,6 +1,4 @@
-import { Knex } from 'knex';
-
-export async function up(knex: Knex): Promise<void> {
+exports.up = async function up(knex) {
   await knex.schema.createTable('snippets', (table) => {
     table.uuid('id').primary();
     table.enu('language', ['python', 'javascript']).notNullable();
@@ -13,8 +11,8 @@ export async function up(knex: Knex): Promise<void> {
     table.integer('confidence');
     table.timestamp('created_at').defaultTo(knex.fn.now());
   });
-}
+};
 
-export async function down(knex: Knex): Promise<void> {
+exports.down = async function down(knex) {
   await knex.schema.dropTableIfExists('snippets');
-}
+};
