@@ -12,7 +12,7 @@ Please respond with a valid JSON object (and ONLY the JSON, no other text) with 
 {
   "title" : "A short title below 3-4 words for whole code",
   "summary": "A brief one-line summary of what this code does",
-  "explanation": "A detailed explanation of the code in bullet points, including what it does, how it works, and important concepts",
+  "explanation": "A detailed explanation of the code as bullet points. Each point should start with a hyphen (-) and be concise.",
   "optimizedCode": "An optimized version of the code with improvements (if applicable), or the original code if already optimal",
   "timeComplexity": "Big O time complexity analysis with no explaination or short explaination below 15 words",
   "spaceComplexity": "Big O space complexity analysis with no explaination or short explaination below 15 words"
