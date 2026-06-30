@@ -7,7 +7,7 @@ import './App.css';
 function App() {
   // Auth state
   const [isAuth, setIsAuth] = useState(false);
-  const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
+  const [authMode, setAuthMode] = useState<'login' | 'register'>('register');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
@@ -163,7 +163,7 @@ function App() {
                 >
                   <div className="snippet-badge">{snippet.language === 'javascript' ? 'js' : snippet.language === 'python' ? 'py' : snippet.language}</div>
                   <div className="snippet-info">
-                    <div className="snippet-title">{snippet.summary?.substring(0, 30)}...</div>
+                      <div className="snippet-title">{snippet.title ?? snippet.summary?.substring(0, 30)}{snippet.title ? '' : '...'}</div>
                   </div>
                   <button
                     className="delete-btn"

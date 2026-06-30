@@ -107,12 +107,12 @@ explainRouter.post('/', async (req, res) => {
       confidence: judgeJson.score,
     };
 
-    const snippetId = id ?? randomUUID();
     await db('snippets')
       .insert({
         id: snippetId,
         language,
         code,
+        title: finalResult.title,
         summary: finalResult.summary,
         explanation: finalResult.explanation,
         optimized_code: finalResult.optimizedCode,

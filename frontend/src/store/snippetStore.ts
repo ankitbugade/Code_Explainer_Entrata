@@ -7,6 +7,7 @@ export interface Snippet {
   id: string;
   language: 'python' | 'javascript';
   code: string;
+  title?: string;
   summary?: string;
   explanation?: string;
   optimizedCode?: string;

@@ -14,12 +14,8 @@ app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
 
-// Auth routes
-app.use('/api/auth', authRouter);
-
-// Protected routes (auth middleware applied inside routers)
-app.use('/api/explain', explainRouter);
-app.use('/api/snippets', snippetsRouter);
+import { healthRouter } from './routes/health';
+app.use('/api/health', healthRouter);
 
 const PORT = process.env.PORT || 4001;
 app.listen(PORT, () => console.log(`Backend listening on http://localhost:${PORT}`));
